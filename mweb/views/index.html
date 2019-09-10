@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>go-mqueues队列系统</title>
+	<link href="/static/plugins/bootstrap/bootstrap.min.css" rel="stylesheet">
+	<style type="text/css">
+		.mg-top {
+			margin-top: 50px;
+		}
+		.menu {
+			margin-top: 15px;
+		}
+		.menu .caption>h3 {
+			margin-top: 10px;
+		}
+		.page-header > h1 {
+			font-size: 32px;
+		}
+		.list-group > a {
+			cursor: pointer;
+		}
+		.list-group > a > span {
+			float:right;
+			margin-top:1px;
+		}
+
+		.table tr>td {
+			text-align: center;
+		}
+	</style>
+</head>
+<body>
+	<nav id="navbar" class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="http://www.concise.local/workbench/" class="navbar-brand">GoQueue</a> 
+				<button type="button" data-toggle="collapse" data-target="#navbar-collapse" class="navbar-toggle">
+					<span class="sr-only">切换导航</span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span>
+				</button>
+			</div> 
+			<div id="navbar-collapse" class="collapse navbar-collapse navbar-let">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="/">首页</a>
+					</li>
+					<li>
+						<a href="/index">投递</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container mg-top" id="app">
+		<div class="row">
+			<div style="margin-top:20px;">
+			  <!-- Nav tabs -->
+			  <ul class="nav nav-tabs" role="tablist">
+			    <li role="presentation" class="active"><a href="#queueJob" aria-controls="queueJob" role="tab" data-toggle="tab">待执行队列任务</a></li>
+			    <li role="presentation"><a href="#queueJobExecuing" aria-controls="queueJobExecuing" role="tab" data-toggle="tab">执行中队列任务</a></li>
+			  </ul>
+			  <!-- Tab panes -->
+			  <div class="tab-content">
+			    <div role="tabpanel" class="tab-pane active" id="queueJob">
+					<div class="table-responsive">
+						<table class="table table-striped table-bordered table-hover table-condensed">
+							<thead>
+								<tr>
+									<td>Id</td>
+									<td>Name</td>
+									<td>Handler</td>
+									<td>Data</td>
+									<td>Config</td>
+									<td>AttemptsCount</td>
+									<td>操作</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(item,index) in queueJobs" :key="index">
+									<td v-text="item.id"></td>
+									<td v-text="item.name"></td>
+									<td v-text="item.handler"></td>
+									<td v-text="item.data"></td>
+									<td v-text="item.config"></td>
+									<td v-text="item.attempts_count"></td>
+									<td>
+										<button class="btn btn-primary btn-sm">释放</button>
+										<button class="btn btn-danger btn-sm" @click="jobDelete(item)">删除</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+			    </div>
+			    <div role="tabpanel" class="tab-pane" id="queueJobExecuing">
+						<div class="table-responsive">
+						<table class="table table-striped table-bordered table-hover table-condensed">
+							<thead>
+								<tr>
+									<td>Id</td>
+									<td>Name</td>
+									<td>Handler</td>
+									<td>Data</td>
+									<td>Config</td>
+									<td>AttemptsCount</td>
+									<td>操作</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(item,index) in queueJobExcuteings" :key="index">
+									<td v-text="item.id"></td>
+									<td v-text="item.name"></td>
+									<td v-text="item.handler"></td>
+									<td v-text="item.data"></td>
+									<td v-text="item.config"></td>
+									<td v-text="item.attempts_count"></td>
+									<td>
+										<button class="btn btn-primary btn-sm">释放</button>
+										<button class="btn btn-danger btn-sm" @click="jobDelete(item,index)">删除</button>
+									</td>
+								</tr>
+
+							</tbody>
+						</table>
+					</div>
+			    </div>
+			  </div>
+			</div>
+			</div>
+	</div>
+		<script src="/static/plugins/jquery/jquery.min.js"></script>
+		<script src="/static/plugins/bootstrap/bootstrap.min.js"></script>
+		<script src="/static/plugins/vue/vue.min.js"></script>
+		<script type="text/javascript">
+			new Vue({
+				el: "#app",
+				data: function () {
+					return {
+						queueJobs: [],
+						queueJobExcuteings: []
+					}
+				},
+				mounted: function () {
+					var vm = this;
+
+					function getData () {
+						$.ajax({
+							url: "/queue/get",
+							dataType: "json",
+							success: function (response) {
+								if (response.code == 0) {
+									var data = JSON.parse(response.data);
+									vm.queueJobs = JSON.parse(data.queue_jobs);
+									vm.queueJobExcuteings = JSON.parse(data.queue_job_excuteings);
+								}
+								setTimeout(getData,1000);
+							}
+						});
+					}
+					getData();
+				},
+				methods: {
+					jobDelete: function (item,index) {
+						var jobRaw = JSON.stringify(item);
+
+						$.ajax({
+							url: "/queue/delete",
+							type: "post",
+							data: {
+								job_raw: jobRaw
+							},
+							success: function (response) {
+								alert(response.msg);
+							}
+						});
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

@@ -3,23 +3,22 @@ package mqueues
 import (
 	"mtypes"
 	"strconv"
-	"time"
-	"fmt"
 	"sync"
+	"log"
 )
 
 var lock sync.Mutex
 
 type Queue struct {
 	Name string
-	Conn mtypes.Connector
-	Scheduler mtypes.Scheduler
+	Conn Connector
+	Scheduler Scheduler
 	WorkerCount int
-	Handles map[string]mtypes.Handler
+	Handles map[string]Handler
 }
 
-func New (config mtypes.Config) (*Queue,error){
-	err :=  config.Connector.Connect(config)
+func New (config Config) (*Queue,error){
+	err :=  config.Connector.Connect(config.ConnectConfig)
 	if err != nil {
 		return &Queue{},err
 	}
@@ -48,10 +47,9 @@ func (self *Queue) Run () {
 			state,_ := strconv.Atoi(err.Error())
 
 			if state == -1{
-				<-time.Tick(time.Second * 3)
 				continue
 			}
-			fmt.Println(err)
+			log.Printf("job get error:%s\n", err.Error())
 			continue
 		}
 
@@ -69,8 +67,8 @@ func (self *Queue) Pop () (*mtypes.Job,error) {
 	return job,nil
 }
 
-func (self *Queue) Later (second int64,job *mtypes.Job) error {
-	return self.Conn.Later(self.Conn.GetQueueName(),second,job)
+func (self *Queue) Later (delay int64,job *mtypes.Job) error {
+	return self.Conn.Later(self.Conn.GetQueueName(),delay,job)
 }
 
 func (self *Queue) Push(job *mtypes.Job) error {
@@ -87,7 +85,9 @@ func createWorker (in chan mtypes.Job,queue *Queue) {
 			job := <- in
 			task,has := queue.Handles[job.Handler]
 			if has {
-				task.Fire(job)
+				task.Fire(&Job{
+					&job,queue,
+				})
 			}
 		}
 	}()

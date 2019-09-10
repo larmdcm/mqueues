@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 	"fmt"
-	"log"
 	"mtypes"
 	"mqueues/scheduler"
 )
@@ -14,10 +13,11 @@ var mqueue *Queue
 var err error
 
 func init ()  {
-	config := mtypes.Config{
+	config := Config{
 		Name: "test",
-		Host: "127.0.0.1",
-		Port: 6379,
+		ConnectConfig: mtypes.ConnectConfig{
+			"127.0.0.1",6379,"",
+		},
 		Connector: &connection.Redis{},
 		Scheduler: &scheduler.Dispatch{},
 		WorkerCount: 50,
@@ -26,22 +26,67 @@ func init ()  {
 }
 func TestQueue_Insert(t *testing.T) {
 	job1 := &mtypes.Job{
-		time.Now().Unix(),"Push","GoHandle","PushTest","Config",
+		"1","Push","GoHandle","PushTest","Config",0,
 	}
 	job2 := &mtypes.Job{
-		time.Now().Unix(),"Later100","HttpHandle","LaterTest","Config",
+		"2","Later100","HttpHandle","LaterTest","Config",0,
 	}
 	err = mqueue.Push(job1)
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 	err = mqueue.Later(30,job2)
 	fmt.Println(time.Now().Unix())
 	if err != nil {
-		log.Fatal(err.Error())
+		t.Fatal(err.Error())
 	}
 }
 
 func TestQueue_Pop(t *testing.T) {
 	fmt.Println(mqueue.Pop())
+}
+
+func TestJob_GetJobDataJson(t *testing.T) {
+	job,err := mqueue.Pop()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mjob := &Job{
+		job,mqueue,
+	}
+	b,err := mjob.GetJobDataJson()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(string(b))
+}
+
+func TestJob_Delete(t *testing.T) {
+	job,err := mqueue.Pop()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mjob := &Job{
+		job,mqueue,
+	}
+	err = mjob.Delete()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("queue job delete at success")
+}
+
+func TestJob_Release(t *testing.T) {
+	job,err := mqueue.Pop()
+	if err != nil {
+		t.Fatal(err)
+	}
+	mjob := &Job{
+		job,mqueue,
+	}
+	err = mjob.Release(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("queue job release at success job attempts count:%d",mjob.Attempts())
 }

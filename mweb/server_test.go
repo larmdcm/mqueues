@@ -1,12 +1,12 @@
-package main
+package mweb
 
 import (
+	"testing"
+	"mqueues"
+	"handler"
+	"mtypes"
 	"mqueues/connection"
 	"mqueues/scheduler"
-	"mqueues"
-	"mtypes"
-	"handler"
-	"mweb"
 )
 
 var mqueue *mqueues.Queue
@@ -31,7 +31,6 @@ func init ()  {
 	mqueue,err = mqueues.New(config)
 }
 
-func main() {
-	go mqueue.Run()
-	mweb.Run(mqueue)
+func TestRun(t *testing.T) {
+	Run(mqueue)
 }
