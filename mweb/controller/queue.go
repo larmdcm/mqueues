@@ -19,6 +19,50 @@ type QueueJobListResult struct {
 	QueueJobExcuteings string `json:"queue_job_excuteings"`
 }
 
+func (self *QueueController) Release (writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type","application/json")
+
+	jobRaw := request.FormValue("job_raw")
+	delayStr := request.FormValue("delay")
+
+	delay,err := strconv.ParseInt(delayStr,10,64)
+	if err != nil {
+		self.HttpJsonError(writer,"delay type is not a int")
+		return
+	}
+	jobData := &mtypes.Job{}
+	json.Unmarshal([]byte(jobRaw),jobData)
+	job := &mqueues.Job{
+		JobData: jobData,
+		Queue: lib.GetQueue(),
+	}
+	err = job.Release(delay)
+	if err != nil {
+		log.Printf("queue/release jobs release error:%s",err.Error())
+		self.Error(writer,"queue job release error","{}")
+		return
+	}
+	self.Correct(writer,"queue job release success","{}")
+}
+func (self *QueueController) Delete (writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type","application/json")
+
+	queueType := request.FormValue("queue_type")
+	jobRaw := request.FormValue("job_raw")
+	conn := lib.GetQueue().Conn
+	queueName := conn.GetQueueName()
+	if queueType != "1" {
+		queueName = conn.GetQueueExcutingName()
+	}
+	err := conn.Delete(queueName,[]byte(jobRaw))
+	if err != nil {
+		log.Printf("queue/delete jobs delete error:%s",err.Error())
+		self.Error(writer,"queue job delete error","{}")
+		return
+	}
+	self.Correct(writer,"queue job delete success","{}")
+}
+
 func (self *QueueController) Get (writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type","application/json")
 
@@ -85,5 +129,5 @@ func (self *QueueController) Create (writer http.ResponseWriter, request *http.R
 		msg ="Delivery failure"
 		code = 400
 	}
-	self.ResultJson(writer,code,msg,"[]")
+	self.ResultJson(writer,code,msg,"{}")
 }

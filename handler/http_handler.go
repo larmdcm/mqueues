@@ -46,6 +46,9 @@ func (self *HttpHandler) Fire(job *mqueues.Job) {
 }
 
 func (self *HttpHandler) SendNotify (config *JobHttpHandleConfig,jobData *mtypes.JobHandleResult) (string,error) {
+	if config.Url == "" {
+		return "not a request url",nil
+	}
 	jsonData,err := json.Marshal(jobData)
 	if err != nil {
 		return "",err

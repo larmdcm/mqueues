@@ -68,9 +68,13 @@ func Run (queue *mqueues.Queue)  {
 	siteController  := &controller.SiteController{}
 	http.HandleFunc("/",staticResource)
 	http.HandleFunc("/index",siteController.Index)
+	http.HandleFunc("/create",siteController.Create)
 
 	http.HandleFunc("/queue/create",queueController.Create)
 	http.HandleFunc("/queue/get",queueController.Get)
+	http.HandleFunc("/queue/delete",queueController.Delete)
+	http.HandleFunc("/queue/release",queueController.Release)
+
 	err := http.ListenAndServe(":9099",nil)
 
 	if err != nil {

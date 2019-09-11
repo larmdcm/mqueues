@@ -29,7 +29,7 @@ func (self *Controller) Render (writer http.ResponseWriter,view string,data inte
 func (self *Controller) HttpJsonError (writer http.ResponseWriter,msg string) {
 	 resultData := model.ResultData{
 	 	Code: 500,
-	 	Data: "[]",
+	 	Data: "{}",
 	 	Msg: msg,
 	 	Date: time.Now().Unix(),
 	 }

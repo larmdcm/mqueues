@@ -7,7 +7,7 @@ import (
 
 type Job struct {
 	JobData *mtypes.Job
-	queue *Queue
+	Queue *Queue
 }
 
 func (self *Job) Delete () error {
@@ -15,7 +15,7 @@ func (self *Job) Delete () error {
 	if err != nil {
 		return err
 	}
-	return self.queue.Conn.Delete(self.queue.Conn.GetQueueExcutingName(),jobK)
+	return self.Queue.Conn.Delete(self.Queue.Conn.GetQueueExcutingName(),jobK)
 }
 
 func (self *Job) Release (delay int64) error {
@@ -24,7 +24,7 @@ func (self *Job) Release (delay int64) error {
 		return err
 	}
 	self.JobData.AttemptsCount++
-	return self.queue.Conn.Later(self.queue.Conn.GetQueueName(),delay,self.JobData)
+	return self.Queue.Conn.Later(self.Queue.Conn.GetQueueName(),delay,self.JobData)
 }
 
 func (self *Job) GetJobDataJson () ([]byte,error) {

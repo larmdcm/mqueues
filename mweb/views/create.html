@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>go-mqueues队列系统</title>
+	<link href="/static/plugins/bootstrap/bootstrap.min.css" rel="stylesheet">
+	<style type="text/css">
+		.mg-top {
+			margin-top: 50px;
+		}
+		.menu {
+			margin-top: 15px;
+		}
+		.menu .caption>h3 {
+			margin-top: 10px;
+		}
+		.page-header > h1 {
+			font-size: 32px;
+		}
+		.list-group > a {
+			cursor: pointer;
+		}
+		.list-group > a > span {
+			float:right;
+			margin-top:1px;
+		}
+
+		.table tr>td {
+			text-align: center;
+			vertical-align:middle;
+		}
+	</style>
+</head>
+<body>
+	<nav id="navbar" class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<a href="/" class="navbar-brand">GoQueue</a> 
+				<button type="button" data-toggle="collapse" data-target="#navbar-collapse" class="navbar-toggle">
+					<span class="sr-only">切换导航</span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span> 
+					<span class="icon-bar"></span>
+				</button>
+			</div> 
+			<div id="navbar-collapse" class="collapse navbar-collapse navbar-let">
+				<ul class="nav navbar-nav">
+					<li>
+						<a href="/">队列</a>
+					</li>
+					<li>
+						<a href="/create">投递</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</nav>
+	<div class="container mg-top" id="app">
+		<div class="row" id="app">
+			<div class="col-sm-10" style="margin-top:10px;">
+				<form class="form-horizontal" action="/queue/create" method="post" onsubmit="return false;">
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Name:</label>
+						<div class="col-sm-10">
+							<input type="text" name="name" class="form-control" v-model="name"/>
+						</div>
+					</div>
+					<div class="form-group">
+						 <label class="col-sm-2 control-label">Handler:</label>
+						 <div class="col-sm-10">
+							 <select name="handler" class="form-control" v-model="handler">
+								 <option value="HttpHandle">HttpHandle</option>
+							 </select>
+					    </div>
+					</div>
+					<div class="form-group">
+						 <label class="col-sm-2 control-label">Delay:</label>
+						 <div class="col-sm-10">
+ 							<input type="text" name="delay" class="form-control" v-model="delay"/>
+					    </div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Data:</label>
+						<div class="col-sm-10">
+							<textarea name="data" class="form-control" cols="30" rows="5" v-model="data"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-2 control-label">Config:</label>
+						<div class="col-sm-10">
+							<textarea name="config" class="form-control" cols="30" rows="5" v-model="config"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<input type="submit" class="btn btn-default form-control" @click="submit()"/>
+						</div>
+					</div>
+				</form>
+			</div>
+			
+		</div>
+		</div>
+	</div>
+		<script src="/static/plugins/jquery/jquery.min.js"></script>
+		<script src="/static/plugins/bootstrap/bootstrap.min.js"></script>
+		<script src="/static/plugins/vue/vue.min.js"></script>
+		<script src="/static/plugins/layer/layer.js"></script>
+		<script type="text/javascript">
+			new Vue({
+				el: "#app",
+				data: function () {
+					return {
+						name: "测试任务-" + (new Date()).getTime(),
+						handler: "HttpHandle",
+						delay: 0,
+						data: "{}",
+						config: "{}"
+					}
+				},
+				methods: {
+					submit: function () {
+						var vm = this
+						, form = $('form');
+						$.ajax({
+							url: form.attr('action'),
+							type: form.attr('method'),
+							data: {
+								name: vm.name,
+								handler: vm.handler,
+								delay: vm.delay,
+								data: vm.data,
+								config: vm.config,
+							},
+							dataType: "json",
+							success: function (response) {
+								layer.msg(response.msg);
+							}
+						});
+					}
+				}
+			});
+		</script>
+	</body>
+</html>
