@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"mweb/lib"
 	"mqueues"
+	"fmt"
 )
 
 func staticResource(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +62,7 @@ func staticResource(w http.ResponseWriter, r *http.Request) {
 	w.Write(fd)
 }
 
-func Run (queue *mqueues.Queue)  {
+func Run (queue *mqueues.Queue,config map[string]string)  {
 	lib.SetQueue(queue)
 
 	queueController := &controller.QueueController{}
@@ -75,7 +76,7 @@ func Run (queue *mqueues.Queue)  {
 	http.HandleFunc("/queue/delete",queueController.Delete)
 	http.HandleFunc("/queue/release",queueController.Release)
 
-	err := http.ListenAndServe(":9099",nil)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%s",config["host"],config["port"]),nil)
 
 	if err != nil {
 		log.Fatal(err)

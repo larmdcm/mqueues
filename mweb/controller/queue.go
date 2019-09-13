@@ -22,6 +22,11 @@ type QueueJobListResult struct {
 func (self *QueueController) Release (writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type","application/json")
 
+	if request.Method != http.MethodPost {
+		self.HttpJsonError(writer,"request method is not a post")
+		return
+	}
+
 	jobRaw := request.FormValue("job_raw")
 	delayStr := request.FormValue("delay")
 
@@ -46,6 +51,11 @@ func (self *QueueController) Release (writer http.ResponseWriter, request *http.
 }
 func (self *QueueController) Delete (writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type","application/json")
+
+	if request.Method != http.MethodPost {
+		self.HttpJsonError(writer,"request method is not a post")
+		return
+	}
 
 	queueType := request.FormValue("queue_type")
 	jobRaw := request.FormValue("job_raw")
@@ -101,6 +111,12 @@ func (self *QueueController) Get (writer http.ResponseWriter, request *http.Requ
 
 func (self *QueueController) Create (writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type","application/json")
+
+	if request.Method != http.MethodPost {
+		self.HttpJsonError(writer,"request method is not a post")
+		return
+	}
+	
 	id := mqueues.UniqueId()
 	name := request.FormValue("name")
 	handler := request.FormValue("handler")

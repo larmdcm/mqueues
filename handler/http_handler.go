@@ -9,6 +9,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
+	"strings"
+	"strconv"
 )
 
 type HttpJsonData struct {
@@ -24,6 +26,10 @@ type HttpHandler struct {
 }
 
 func (self *HttpHandler) Fire(job *mqueues.Job) {
+	if job.Attempts() > 6 {
+		job.Delete()
+		return
+	}
 	jobConfig := &JobHttpHandleConfig{}
 	json.Unmarshal([]byte(job.JobData.Config),jobConfig)
 
@@ -43,6 +49,20 @@ func (self *HttpHandler) Fire(job *mqueues.Job) {
 		return
 	}
 	log.Printf("http handle notify success response:%s",response)
+
+	if strings.ToUpper(response) == "SUCCESS"{
+		job.Delete()
+	} else if (strings.ToUpper(response) == "ERROR") {
+		job.Release(job.Attempts() * 10)
+	} else if (strings.Index(response,"release:") != -1) {
+		releases := strings.Split(response,":")
+		delay,err := strconv.ParseInt(releases[1],10,64)
+		if err != nil {
+			log.Printf("http handler job fire release delay format int error:%s",err.Error())
+			return
+		}
+		job.Release(delay)
+	}
 }
 
 func (self *HttpHandler) SendNotify (config *JobHttpHandleConfig,jobData *mtypes.JobHandleResult) (string,error) {

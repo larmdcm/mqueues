@@ -9,7 +9,8 @@ func GetBasePath () string {
 	}
 	path = path + "/"
 
-	return "E:/GoLang/mqueue-tasks/src/" + "mweb"
+	return path + "mweb"
+	// return "E:/GoLang/mqueue-tasks/src/" + "mweb"
 }
 
 func GetPublicPath () string {
