@@ -116,7 +116,7 @@ func (self *QueueController) Create (writer http.ResponseWriter, request *http.R
 		self.HttpJsonError(writer,"request method is not a post")
 		return
 	}
-	
+
 	id := mqueues.UniqueId()
 	name := request.FormValue("name")
 	handler := request.FormValue("handler")
