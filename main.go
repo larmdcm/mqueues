@@ -24,10 +24,11 @@ func init ()  {
 		log.Fatal("config read error:%s",err.Error())
 	}
 	queueName,_ := fconfig.GetValue("queue","name")
+	workNum,_ := fconfig.Int("queue","work_num")
+
 	redisHost,_ := fconfig.GetValue("redis","host")
 	redisPassword,_ := fconfig.GetValue("redis","password")
 	redisPort,_ := fconfig.Int("redis","port")
-
 	handlers["GoHandle"] = &handler.GoHandler{}
 	handlers["HttpHandle"] = &handler.HttpHandler{}
 	config := mqueues.Config{
@@ -39,7 +40,7 @@ func init ()  {
 		},
 		Connector: &connection.Redis{},
 		Scheduler: &scheduler.Dispatch{},
-		WorkerCount: 100,
+		WorkerCount: workNum,
 		Handlers: handlers,
 	}
 	mqueue,err = mqueues.New(config)
